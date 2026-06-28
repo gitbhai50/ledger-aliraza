@@ -1,44 +1,45 @@
-const cacheName = 'ledger-v2';
-const staticAssets = [
-  './',
-  './index.html',
-  './manifest.json'
+const CACHE_NAME = "smart-ledger-cache-v2";
+const assets = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./sw.js",
+  "./logo.png"
 ];
 
-self.addEventListener('install', async e => {
-  const cache = await caches.open(cacheName);
-  await cache.addAll(staticAssets);
-  return self.skipWaiting();
+// سروس ورکر کو انسٹال کرنا اور نیا لوگو کیشے میں سیو کرنا
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log("Caching assets including new logo...");
+      return cache.addAll(assets);
+    })
+  );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
+// پرانے کیشے کو صاف کرنا تاکہ نیا لوگو فوراً موبائل پر اپڈیٹ ہو جائے
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log("Clearing old cache:", key);
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', async e => {
-  const req = e.request;
-  const url = new URL(req.url);
-
-  if (url.origin === location.origin) {
-    e.respondWith(cacheFirst(req));
-  } else {
-    e.respondWith(networkFirst(req));
-  }
+// آف لائن کام کرنے کے لیے فائلیں لوڈ کرنا
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request);
+    })
+  );
 });
-
-async function cacheFirst(req) {
-  const cache = await caches.open(cacheName);
-  const cachedResponse = await cache.match(req);
-  return cachedResponse || fetch(req);
-}
-
-async function networkFirst(req) {
-  const cache = await caches.open(cacheName);
-  try {
-    const res = await fetch(req);
-    cache.put(req, res.clone());
-    return res;
-  } catch (error) {
-    return cache.match(req);
-  }
-}
