@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl" id="appRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Ledger</title>
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --danger: #ef4444;
+            --danger-dark: #dc2626;
+            --accent: #6366f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .lang-switcher {
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .lang-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .lang-btn.active {
+            background: var(--card-bg);
+            color: var(--accent);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 30px 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.2);
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(99, 102, 241, 0.15);
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+
+        .balance-label {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 16px;
+            outline: none;
+            background: #f8fafc;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 28px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-add { background: var(--primary); }
+        .btn-add:hover { background: var(--primary-dark); }
+        .btn-less { background: var(--danger); }
+        .btn-less:hover { background: var(--danger-dark); }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .history-container {
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .history-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .history-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .log-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .log-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .log-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .log-reason {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-main);
+        }
+
+        .log-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .log-amount {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .amt-add { color: var(--primary); }
+        .amt-less { color: var(--danger); }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="top-bar">
+        <div class="app-title" id="uiTitle">روزمرہ حساب کتاب</div>
+        <div class="lang-switcher">
+            <button class="lang-btn active" id="btnUr" onclick="switchLanguage('ur')">اردو</button>
+            <button class="lang-btn" id="btnEn" onclick="switchLanguage('en')">EN</button>
+        </div>
+    </div>
+
+    <div class="balance-card">
+        <div class="balance-label" id="uiBalanceLabel">موجودہ بیلنس</div>
+        <div class="balance-amount" id="totalBalance">0</div>
+    </div>
+
+    <div class="form-group">
+        <label id="uiAmountLabel">رقم (Amount)</label>
+        <input type="number" id="amount" placeholder="0.00" inputmode="decimal">
+    </div>
+    
+    <div class="form-group">
+        <label id="uiReasonLabel">وجہ / تفصیل (Reason)</label>
+        <input type="text" id="reason" placeholder="...">
+    </div>
+
+    <div class="action-grid">
+        <button class="btn btn-add" id="uiBtnAdd" onclick="updateLedger('add')">جمع کریں (+)</button>
+        <button class="btn btn-less" id="uiBtnLess" onclick="updateLedger('less')">منہا کریں (-)</button>
+    </div>
+
+    <div class="section-header">
+        <div class="section-title" id="uiHistoryTitle">حالیہ ریکارڈ</div>
+    </div>
+    <div class="history-container" id="historyList">
+        </div>
+</div>
+
+<script>
+    const langData = {
+        ur: {
+            title: "روزمرہ حساب کتاب",
+            balanceLabel: "موجودہ بیلنس",
+            amountLabel: "رقم (Amount)",
+            reasonLabel: "وجہ / تفصیل (Reason)",
+            placeholderAmount: "رقم لکھیں جیسے: 2500",
+            placeholderReason: "تفصیل لکھیں جیسے: روم رینٹ",
+            btnAdd: "جمع کریں (+)",
+            btnLess: "منہا کریں (-)",
+            historyTitle: "حالیہ ریکارڈ",
+            empty: "ابھی تک کوئی ریکارڈ موجود نہیں ہے۔",
+            defaultAdd: "رقم ایڈ کی",
+            defaultLess: "خرچہ کیا",
+            alertAmt: "برائے مہربانی درست رقم لکھیں!",
+            dir: "rtl"
+        },
+        en: {
+            title: "Smart Ledger",
+            balanceLabel: "Current Balance",
+            amountLabel: "Amount",
+            reasonLabel: "Reason / Description",
+            placeholderAmount: "Enter amount e.g. 2500",
+            placeholderReason: "Enter reason e.g. Room Rent",
+            btnAdd: "Add Amount (+)",
+            btnLess: "Less Amount (-)",
+            historyTitle: "Recent Transactions",
+            empty: "No transactions recorded yet.",
+            defaultAdd: "Cash In",
+            defaultLess: "Cash Out",
+            alertAmt: "Please enter a valid amount!",
+            dir: "ltr"
+        }
+    };
+
+    let currentLang = localStorage.getItem('ledgerLang') || 'ur';
+    let ledgerData = JSON.parse(localStorage.getItem('myLedgerOffline')) || { balance: 0, logs: [] };
+
+    switchLanguage(currentLang, false);
+
+    function switchLanguage(lang, updateStorage = true) {
+        currentLang = lang;
+        if(updateStorage) localStorage.setItem('ledgerLang', lang);
+
+        const root = document.getElementById('appRoot');
+        root.setAttribute('dir', langData[lang].dir);
+        root.setAttribute('lang', lang);
+
+        document.getElementById('btnUr').classList.toggle('active', lang === 'ur');
+        document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+
+        document.getElementById('uiTitle').innerText = langData[lang].title;
+        document.getElementById('uiBalanceLabel').innerText = langData[lang].balanceLabel;
+        document.getElementById('uiAmountLabel').innerText = langData[lang].amountLabel;
+        document.getElementById('uiReasonLabel').innerText = langData[lang].reasonLabel;
+        document.getElementById('amount').placeholder = langData[lang].placeholderAmount;
+        document.getElementById('reason').placeholder = langData[lang].placeholderReason;
+        document.getElementById('uiBtnAdd').innerText = langData[lang].btnAdd;
+        document.getElementById('uiBtnLess').innerText = langData[lang].btnLess;
+        document.getElementById('uiHistoryTitle').innerText = langData[lang].historyTitle;
+
+        updateUI();
+    }
+
+    function updateLedger(type) {
+        const amountInput = document.getElementById('amount');
+        const reasonInput = document.getElementById('reason');
+        const amount = parseFloat(amountInput.value);
+        
+        let reason = reasonInput.value.trim();
+        if(!reason) {
+            reason = type === 'add' ? langData[currentLang].defaultAdd : langData[currentLang].defaultLess;
+        }
+
+        if (isNaN(amount) || amount <= 0) {
+            alert(langData[currentLang].alertAmt);
+            return;
+        }
+
+        const now = new Date();
+        const dateStr = currentLang === 'ur' ? now.toLocaleDateString('ur-PK') : now.toLocaleDateString('en-US');
+        const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        const dateTimeString = `${dateStr} | ${timeStr}`;
+
+        if (type === 'add') {
+            ledgerData.balance += amount;
+            ledgerData.logs.unshift({ type: 'add', amount: amount, reason: reason, time: dateTimeString });
+        } else if (type === 'less') {
+            ledgerData.balance -= amount;
+            ledgerData.logs.unshift({ type: 'less', amount: amount, reason: reason, time: dateTimeString });
+        }
+
+        localStorage.setItem('myLedgerOffline', JSON.stringify(ledgerData));
+        amountInput.value = '';
+        reasonInput.value = '';
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('totalBalance').innerText = ledgerData.balance.toLocaleString();
+        const historyContainer = document.getElementById('historyList');
+        historyContainer.innerHTML = '';
+
+        if(ledgerData.logs.length === 0) {
+            historyContainer.innerHTML = `<div class="empty-state">${langData[currentLang].empty}</div>`;
+            return;
+        }
+
+        ledgerData.logs.forEach(log => {
+            const card = document.createElement('div');
+            card.className = 'log-card';
+
+            const sign = log.type === 'add' ? '+' : '-';
+            const colorClass = log.type === 'add' ? 'amt-add' : 'amt-less';
+
+            card.innerHTML = `
+                <div class="log-meta">
+                    <span class="log-reason">${log.reason}</span>
+                    <span class="log-time">${log.time}</span>
+                </div>
+                <div class="log-amount ${colorClass}">${sign}${log.amount.toLocaleString()}</div>
+            `;
+            historyContainer.appendChild(card);
+        });
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("System Ready"))
+        .catch(err => console.log("Error", err));
+    }
+</script>
+
+</body>
+</html>
